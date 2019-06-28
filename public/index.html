@@ -8,9 +8,11 @@
   <link type="text/css" rel="stylesheet" href="./css/bbb.css">
   <link type="text/css" rel="stylesheet" href="./css/changealert.css">
   <link rel="shortcut icon" href="./image2/icon.png">
+  <script type="text/javascript" language="javascript" src="./js/vue.min.js"></script>
   <script type="text/javascript" language="javascript" src="./js/jquery-1.10.2.min.js"></script>
   <script type="text/javascript" language="javascript" src="./js/jquery.nicescroll.min.js"></script>
   <script type="text/javascript" language="javascript" src="./js/niceScroll.js"></script>
+  <script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
 </head>
 
 <body>
@@ -29,13 +31,13 @@
             <span class="error">用户名为空！</span>
           </p>
           <p class="distroy">
-            <input type="password" value="" name="password" id="password" class="auth" autocomplete="off"
+            <input type="text" value="" name="password" id="password" class="auth" autocomplete="off"
               placeholder="请输入ip"></br>
             <span class="error">ip为空！</span>
           </p>
           <p class="keeppassword">
             <input type="checkbox" name="passwordkeeping" id="passwordkeeping">
-            <label for="passwordkeeping">记住ip</label>
+            <label for="passwordkeeping">Remember Me</label>
           </p>
           <p class="distroy">
             <input type="submit" name="" value="登 录" id="login_submit">
@@ -137,12 +139,12 @@
         <!--BEGIN nav view-->
         <div id="navView"></div>
         <!--chat-->
-        <div class="nav_view">
+        <div class="nav_view" id="chat_view">
           <div class="scroll-wrapper chat_list scrollbar-dynamic" style="position:relative;">
             <div class="chat_list scrolls scrollbar-dynamic scroll-content scroll-scrolly_visible"
               style="margin-bottom: 0px; margin-right: 0px; height:100%;">
               <div class="chats scrolls" data-height="64" data-buffer-height="200">
-                <div class="chat-repeat none">
+                <div class="chat-repeat" v-for="(item,index) in dans">
                   <div class="chat_item">
                     <div class="ext">
                       <p class="msg-time"></p>
@@ -152,8 +154,8 @@
                       <i class="icon web_chat_reddot_ none"></i>
                     </div>
                     <div class="info">
-                      <h3 class="nickname">123123</h3>
-                      <p class="msg">123123</p>
+                      <h3 class="nickname">{{item.name}}</h3>
+                      <p class="msg">{{item.msg}}</p>
                     </div>
                   </div>
                 </div>
@@ -164,21 +166,22 @@
         <div class="nav_view none">
         </div>
         <!--list-->
-        <div class="nav_view none">
+        <div class="nav_view none" id="list_view">
           <div class="scroll-wrapper contact-list scrollbar-dynamic" style="height:100%;position:relative;">
             <div class="contact-list scrolls scrollbar-dynamic scroll-content scroll-scrolly_visible"
               style="margin-bottom: 0px; margin-right: 0px; height:100%;">
               <div class="" data-height="heightCalc" data-buffer-height="100">
                 <div class="">
-                  <h4 class="contact-title">联系人</h4>
+                  <h4 class="contact-title">在线用户</h4>
                 </div>
                 <div class=" contact-list lists">
-                  <div class="contact-item ng-repeat">
+                  <div class="contact-item ng-repeat" :class="{active:index==s}" v-for="(item,index) in fris"
+                    @click="clickList(item,index)">
                     <div class="avatar">
                       <img src="image2/contactsHead.jpg" alt="">
                     </div>
                     <div class="info">
-                      <h4 class="nickname"></h4>
+                      <h4 class=" nickname">{{item.name}}</h4>
                     </div>
                   </div>
 
@@ -247,16 +250,12 @@
                 <p class="introduce"></p>
                 <div class="meta_area">
                   <div class="meta_item">
-                    <label for="" class="label">年龄：</label>
-                    <p class="value age"></p>
+                    <label for="" class="label">昵称：</label>
+                    <p class="value name"></p>
                   </div>
                   <div class="meta_item">
-                    <label for="" class="label">e-mail：</label>
-                    <p class="value mailbox"></p>
-                  </div>
-                  <div class="meta_item">
-                    <label for="" class="label">地区：</label>
-                    <p class="value address"></p>
+                    <label for="" class="label">ip:</label>
+                    <p class="value ip"></p>
                   </div>
                 </div>
                 <div class="action_area">
@@ -306,7 +305,7 @@
                 </div>
               </div>
               <div id="prerender"
-                style="visibility hidden;position: absolute;width: 100%;top: 333px;height: 0;padding: 0 19px;box-sizing: border-box;margin-left: -19px;overflow: hidden;">
+                style="visibility: hidden;position: absolute;width: 100%;top: 333px;height: 0;padding: 0 19px;box-sizing: border-box;margin-left: -19px;overflow: hidden;">
               </div>
               <div class="empty none">
                 <i class="web_chat_no_contect"></i>
@@ -676,23 +675,19 @@
       </div>
       <div class="profile_mini_m_bd  profile_mini_bd">
         <div class="nickname_area">
-          <div class="opt ">
+          <!-- <div class="opt ">
             <i class="web_chat_tab_change" title="更改">>></i>
-          </div>
+          </div> -->
           <h4 class="nickname "></h4>
         </div>
         <div class="meta_area ">
-          <div class="meta_item ">
-            <label for="" class="label">年龄：</label>
-            <p class="value age"></p>
-          </div>
-          <div class="meta_item ">
-            <label for="" class="label">e-mail：</label>
-            <p class="value mailbox"></p>
-          </div>
-          <div class="meta_item ">
-            <label for="" class="label">地区：</label>
-            <p class="value address"></p>
+          <!-- <div class="meta_item">
+            <label for="" class="label">昵称：</label>
+            <p class="value name"></p>
+          </div> -->
+          <div class="meta_item">
+            <label for="" class="label">ip:</label>
+            <p class="value ip"></p>
           </div>
         </div>
       </div>
@@ -714,13 +709,13 @@
           <h4 class="nickname "></h4>
         </div>
         <div class="meta_area ">
-          <div class="meta_item ">
-            <label for="" class="label">id：</label>
-            <p class="value id"></p>
+          <div class="meta_item">
+            <label for="" class="label">昵称：</label>
+            <p class="value name"></p>
           </div>
-          <div class="meta_item ">
-            <label for="" class="label">备注：</label>
-            <p class="value"></p>
+          <div class="meta_item">
+            <label for="" class="label">ip:</label>
+            <p class="value ip"></p>
           </div>
         </div>
       </div>
@@ -805,8 +800,10 @@
     <button class="okoButton tips none">ok</button>
   </div>
   <audio id="tidings" src="music/tidings.wav" style="display: none;"></audio>
-  <script type="text/javascript" src="./js/login.js"></script>
+  <script type="text/javascript" language="javascript" src="./js/vue_main.js"></script>
   <script type="text/javascript" src="./js/changealert.js"></script>
+  <script type="text/javascript" src="./js/login.js"></script>
+  <script type="text/javascript" src="./js/main.js"></script>
   <!-- <script type="text/javascript" src="./js/bbb.js"></script> -->
 </body>
 
