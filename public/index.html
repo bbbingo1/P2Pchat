@@ -144,14 +144,16 @@
             <div class="chat_list scrolls scrollbar-dynamic scroll-content scroll-scrolly_visible"
               style="margin-bottom: 0px; margin-right: 0px; height:100%;">
               <div class="chats scrolls" data-height="64" data-buffer-height="200">
-                <div class="chat-repeat" v-for="(item,index) in dans">
+                <div class="chat-repeat" :class="{active:index==c}" v-for="(item,index) in dans"
+                  @click="clickChat(item,index)">
                   <div class="chat_item">
                     <div class="ext">
                       <p class="msg-time"></p>
                     </div>
                     <div class="avatar">
                       <img src="image2/contactsHead.jpg" alt="">
-                      <i class="icon web_chat_reddot_ none"></i>
+                      <i class="icon"
+                        :class="{web_wechat_reddot_bbig:item.lefts>99}" v-show="item.lefts">{{item.lefts < "99" ? item.lefts:"99+"}}</i>
                     </div>
                     <div class="info">
                       <h3 class="nickname">{{item.name}}</h3>
@@ -176,7 +178,7 @@
                 </div>
                 <div class=" contact-list lists">
                   <div class="contact-item ng-repeat" :class="{active:index==s}" v-for="(item,index) in fris"
-                    @click="clickList(item,index)">
+                    @click="clickList(item,index)" @dblclick="dblClickList()">
                     <div class="avatar">
                       <img src="image2/contactsHead.jpg" alt="">
                     </div>
@@ -193,8 +195,8 @@
         <!--设置按钮触发列表-->
         <div id="mmpop" class="mmpop  system_menu" style="top:60px;left:85px;">
           <ul class="dropdown_menu ">
-            <li><a href="javascript" onclick="return false;" title="发起聊天">
-                <i class="menuicon_chat"></i>发起聊天
+            <li><a href="javascript" onclick="return false;" title="发起群聊">
+                <i class="menuicon_chat"></i>发起群聊
               </a></li>
             <li class="notice_ctrl"><a href="javascript" onclick="return false;" title="关闭桌面通知">
                 <i class="menuicon_push_on menuicon_push"></i>关闭桌面通知
@@ -266,10 +268,10 @@
             <div class="box_bd scrolls" style="margin-bottom: 0px; margin-right: 0px; height:100%;">
               <div class="mms">
                 <div class="mm-repeat none">
-                  <div class="more">
+                  <!-- <div class="more">
                     <a href="" class="content">查看更多消息</a>
                     <div class="loading" style="display:inline-block;"></div>
-                  </div>
+                  </div> -->
                   <div class="message me" style="display:none;">
                     <div class="message-time none">
                       <div class="content"></div>

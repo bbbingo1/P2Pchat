@@ -3,8 +3,8 @@ var addressList = {
     vue: new Vue({
         el: '#list_view',
         data: {
-            fris: [],
-            s: Infinity,
+            fris: [],//用户列表，包含两个参数：name，ip
+            s: Infinity,//标记高亮
         },
         methods: {
             //点击通讯录联系人
@@ -17,6 +17,12 @@ var addressList = {
                 $(".profile").find(".nickname").text(item.name);
                 $(".profile").find(".ip").text(item.ip);
                 $(".profile").find("img").attr("src", $(".ng-repeat").eq(index).find("img").attr("src"));
+            },
+            //双击通讯录联系人
+            dblClickList: function () {
+                var name = $(".contacts_message .nickname").text();
+                var ip = $(".contacts_message .ip").text();
+                api.toChat(name, ip);
             }
         },
     })
@@ -27,9 +33,25 @@ var chatList = {
     vue: new Vue({
         el: '#chat_view',
         data: {
-            groups: [],
-            dans: [],
+            messes: [],//聊天数据
+            dans: [],//聊天对象列表，包含参数：用户名name，ip,最近消息msg,未读消息数lefts,
+            c: Infinity,//标记高亮
         },
+        methods: {
+            //点击聊天对象
+            clickChat: function (item, index) {
+                this.c = index;
+                this.dans[index].lefts = 0;
+                $(".box .web_wechat_turn").removeClass("none");
+                $(".title_name").text(item.name);
+                $("#editArea").focus();
+                // $(".noones").addClass("none");
+                // $(".contacts_message").addClass("none");
+                // $(".title_wrap .title").addClass("none");
+                // $(".title_poi").removeClass("none");
+            }
+        },
+
     })
 }
 

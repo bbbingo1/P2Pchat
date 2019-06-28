@@ -68,6 +68,16 @@ window.onload = function () {
           //连接关闭后的回调
           socket.onclose = function (req) {
           }
+
+          //连接发生错误
+          websocket.onerror = function () {
+            alert("连接发生错误");
+          }
+
+          //监听窗口关闭
+          window.onbeforeunload = function () {
+            websocket.close();
+          }
         }
       }
       else {
@@ -77,7 +87,6 @@ window.onload = function () {
     }
   });
 }
-var p = 0;   //用作是否点击过联系人发消息的标记
 var api = {
   //登录前操作
   beforeLogin: function () {
@@ -100,12 +109,12 @@ var api = {
     loadRender();
   },
   //发起聊天
-  a : function (name) {
+  toChat: function (name, ip) {
     var idx;
     var h = 1;
     chatList.vue.dans.forEach(function (item, index) {
       if (item.name == name) {
-        h-0;
+        h = 0;
         idx = index;
         return false;
       }
@@ -113,75 +122,53 @@ var api = {
     })
     var dan = new Object();
     //把该联系人放到最前
-    if(h ==0){
+    if (h == 0) {
       dan = chatList.vue.dans[idx];
       chatList.vue.dans.splice(idx, 1);
-      chatList.vue.dans.unshift(dan);
     }
     //创建新的最近联系人
-    else{
+    else {
       dan = {
-        name:name,
-        msg:'',
+        name: name,
+        msg: '',
+        ip: ip,
+        lefts: 0
       }
-      chatList.vue.dans.unshift(dan)
     }
-    // $(".chat-repeat").each(function (index, element) {
-    //   if ($(this).data("signal") == t) {
-    //     h = 0;
-    //     idx = $(this).index();
-    //     return false;
-    //   }
-    //   else { return; }
-    // });
-    // //把该最近联系人放到最前   
-    // if (h == 0) { $(".chats").prepend($(".chat-repeat").eq(idx)); }
-    // else {
-    //   //创建新的最近联系人
-    //   $(".chats").prepend(($(".chat-repeat").eq(0)).clone(true));
-    //   $(".chat-repeat").eq(0).removeClass("none");
-    //   $(".chat-repeat").eq(0).find(".nickname").text(name);
-    //   $(".chat-repeat").eq(0).find(".msg").text("");
-    //   $(".chat-repeat").eq(0).find(".msg-time").text("");
-    // }
-    // //同时创建一个新的聊天消息框
+    chatList.vue.dans.unshift(dan);
+    chatList.vue.c = 0;
+    //同时创建一个新的聊天消息框
     // $(".mm-repeat").find(".more .content").removeClass("none");
-    // $(".mm-repeat").data("signal", t);
-    // $(".message").slice(2).detach();
+    $(".message").slice(2).detach();
     // var k = findNum(t);
-    // Num[k].setMessage();
-    // //利用属性lefts记录未读消息数
-    // $(".chat-repeat").eq(0).data("lefts", 0);
-    // $(".chat-repeat").eq(0).find(".icon").addClass("none");
-    // $(".chat-repeat").eq(0).find(".icon").removeClass("web_wechat_reddot_bbig")
-    // //储存联系人的账户id
+    // Num[k].setMessage();a
+    //利用属性lefts记录未读消息数
+    chatList.vue.dans[0].lefts = 0;
+    //储存联系人的账户id
     // $(".chat-repeat").eq(0).data("signal", t);
-    // //点击后背景色改变
-    // $(".chat-repeat").eq(0).addClass("active");
-    // $(".chat-repeat").not($(".chat-repeat").eq(0)).removeClass("active");
-    // //样式改变
-    // $(".contacts_message").addClass("none");
-    // $(".title_wrap .title").addClass("none");
-    // $(".noones").addClass("none");
-    // $(".empty").addClass("none");
-    // $(".title_poi").removeClass("none");
-    // $(".chatin").removeClass("none");
-    // $(".mm-repeat").removeClass("none");
-    // if ($(".mm-repeat").find($(".message")).length == 2) { $(".message_empty").removeClass("none"); $(".message_empty .nonotes").removeClass("none"); }
-    // else { $(".message_empty").addClass("none"); }
+    //样式改变
+    $(".contacts_message").addClass("none");
+    $(".title_wrap .title").addClass("none");
+    $(".noones").addClass("none");
+    $(".empty").addClass("none");
+    $(".title_poi").removeClass("none");
+    $(".chatin").removeClass("none");
+    $(".mm-repeat").removeClass("none");
+    if ($(".mm-repeat").find($(".message")).length == 2) { $(".message_empty").removeClass("none"); $(".message_empty .nonotes").removeClass("none"); }
+    else { $(".message_empty").addClass("none"); }
 
-    // $("#editArea").focus();//鼠标聚焦在输入框
+    $("#editArea").focus();//鼠标聚焦在输入框
     // $("#editArea").val(Num[k].note);
-    // $(".box .web_wechat_turn").removeClass("none");
-    // $(".box .title_name").text(name);
-    // $(".hint").addClass("none");//取消未读信息小圆点提示
+    $(".box .web_wechat_turn").removeClass("none");
+    $(".box .title_name").text(name);
+    $(".hint").addClass("none");//取消未读信息小圆点提示
     // shineFlag = false;//取消标题新消息闪烁
-    // //tab样式改变
-    // $(".web_chat_tab_chat").addClass("web_chat_tab_chat_h1");
-    // $(".web_chat_tab_friends").removeClass("web_chat_tab_friends_h1");
-    // $(".nav_view").eq(0).removeClass("none");
-    // $(".nav_view").eq(2).addClass("none");
-    // $(".box_bd").animate({ scrollTop: $(".box_bd")[0].scrollHeight }, 1000);//让滚动条滚动到底部
+    //tab样式改变
+    $(".web_chat_tab_chat").addClass("web_chat_tab_chat_h1");
+    $(".web_chat_tab_friends").removeClass("web_chat_tab_friends_h1");
+    $(".nav_view").eq(0).removeClass("none");
+    $(".nav_view").eq(2).addClass("none");
+    $(".box_bd").animate({ scrollTop: $(".box_bd")[0].scrollHeight }, 1000);//让滚动条滚动到底部
 
     // $(".chatin").undelegate();//解除绑定
     // $(".more").undelegate();//解除绑定
@@ -235,25 +222,25 @@ var api = {
         $(".title_wrap .title").addClass("none");
         if ($(".mm-repeat").find($(".message")).length == 2) { $(".message_empty").removeClass("none"); }
         //tab右侧信息框切换
-        if (p == 1) {
+        if (chatList.vue.c != Infinity) {
           $(".chatin").removeClass("none");
           $(".chatout").removeClass("none");
           $(".mm-repeat").removeClass("none");
           $(".noones").addClass("none");
           $(".nonotes").removeClass("none");
         }
-        if (p == 0) {
+        else {
           $(".noones").removeClass("none");
           $(".mm-repeat").addClass("none");
           $(".contacts_message").addClass("none");
         }
-        if (p == 2) {
-          $(".noones").removeClass("none");
-          $(".title_poi").addClass("none");
-          $(".chatin").addClass("none");
-          $(".mm-repeat").addClass("none");
-          $(".message_empty").removeClass("none");
-        }
+        // if (p == 2) {
+        //   $(".noones").removeClass("none");
+        //   $(".title_poi").addClass("none");
+        //   $(".chatin").addClass("none");
+        //   $(".mm-repeat").addClass("none");
+        //   $(".message_empty").removeClass("none");
+        // }
         $(".box_bd").animate({ scrollTop: $(".box_bd")[0].scrollHeight }, 1000);//让滚动条滚动到底部
       }
       if (idx == 1) {
@@ -354,6 +341,7 @@ var api = {
             $(".recommendation .contact-title").text("用户");
             $(".search-list").append(($(".ss-repeat").last()).clone(true));
             $(".ss-repeat").eq(j).find(".nickname").text($(".ng-repeat").eq(i).find(".nickname").text());
+            $(".ss-repeat").eq(j).data("ip", addressList.vue.fris[j].ip);
             $(".ss-repeat").eq(j).removeClass("none");
             j++;
             // console.log($(".ng-repeat").eq(i).find(".nickname").text());
@@ -369,17 +357,32 @@ var api = {
     //点击“发消息”
     $(".profile .button").on("click", function () {
       var name = $(".contacts_message .nickname").text();
-      api.a(name);
+      var ip = $(".contacts_message .ip").text();
+      api.toChat(name, ip);
     })
-
     //搜索栏点击联系人
     $(".ss-repeat").on("click", function () {
       var name = $(this).find(".nickname").text();
+      var ip = $(this).data("ip")
       for (var i = 0; i < $(".ng-repeat").length; i++)
-      $(".frm_search").val("");
+        $(".frm_search").val("");
       $(".recommendation").hide();
-      api.a(name);
+      api.toChat(name, ip);
     })
-  }(),
 
+    //点击聊天窗上方聊天对象
+    $(".title_poi").click(function () {
+      $(".slide-top").animate({ top: "-252px", opacity: 0 }, 150);
+      setTimeout('$(".slide-top").hide()', 150);
+      $(".mmpop").hide();
+      $(".dropdown").addClass("none");
+      $(".web_wechat_turn").toggleClass("web_wechat_down_icon");
+      $(".web_wechat_turn").toggleClass("web_wechat_up_icon");
+      $(".members_wrp").slideToggle(150);
+      var name = $(".box_hd .title_name ").text();
+      $(".member .nickname").text(name);
+      $(".profile_f_mini_bd").find(".nickname").text(name);
+    });
+
+  }(),
 }
