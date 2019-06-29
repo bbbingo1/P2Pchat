@@ -38,6 +38,11 @@ window.onload = function () {
           $(".profile_mini_m_bd").find(".ip").text(globalItem.myIp);
         }
         if (data.type == 0) {//初始化或更新在线用户列表
+          globalItem.users.forEach((item,index) => {
+            if(data.user.ip==item.ip){
+              globalItem.users.splice(index,1)
+            }
+          });
           globalItem.users.push(data.user)
           addressList.vue.fris = globalItem.users.filter(function (item, index) {
             console.log(globalItem.users[index])
@@ -120,6 +125,7 @@ var api = {
   },
   //发起聊天，建立TCP连接
   toChat: function (name, ip) {
+    console.log(ip)
     var idx;
     var h = 1;
     chatList.vue.dans.forEach(function (item, index) {

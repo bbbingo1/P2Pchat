@@ -44,8 +44,7 @@ console.log("当前服务器内网地址：" + serverIP)
 
 wss.on('connection', function (ws, req) {
 
-    // 建立UDP连接，监听8080端口
-    server.bind(serverPort);//不用指定主机号
+
 
     var _this = this;
     // const ip = req.connection.remoteAddress;//获取客户端ip(来自浏览器的客户端)
@@ -62,6 +61,8 @@ wss.on('connection', function (ws, req) {
         var mess = JSON.parse(message);
         //接收信息并根据type执行相应操作
         if (mess.type == 0) {//更新当前在线用户信息;udp组播/广播
+            // 建立UDP连接，监听8080端口
+            server.bind(serverPort);//不用指定主机号
             // //判断该主机是否已建立过连接
             // if (!globalItem.mess.user.some(function (item, index) {
             //     if (item.ip == mess.user.ip) {
@@ -144,6 +145,7 @@ wss.on('connection', function (ws, req) {
             server.send(JSON.stringify(reMess), port, ip)//在线用户通过udp单播响应多播
         }
         else if (mess.type == 4) {//收到登录广播后别人发来的的单播响应，客户端要显示用户列表，即在好友列表中添加用户
+            mess.type = 0;
             ws.send(JSON.stringify(mess));
         }
     });
