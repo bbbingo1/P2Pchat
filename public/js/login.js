@@ -10,27 +10,30 @@ $(document).ready(function () {
         $("#account").val(localStorage.getItem("lastLoginName"))//显示上次记住ip时的登录账号
         var pas = localStorage.getItem($.trim($("#account").val()));//获取账号对应的ip值
 
-        if (returnCitySN["cip"])		//自动填入IP地址
-          $('#password').val(returnCitySN["cip"]);
-        else {
-          $("#password").val(pas);  //赋值给password
-          //获取ip
-          $("#account").keyup(function () {
-            if (window.localStorage) {
-              var pas = localStorage.getItem($.trim($("#account").val()));//获取账号对应的ip值
-              $("#password").val(pas);  //赋值给password
-              if (pas == "" || pas == undefined || pas == null) {
-                $("#passwordkeeping").prop("checked", false)
-              } else {
-                $("#passwordkeeping").prop("checked", true)
-              }
-            }
-            else {
-              var pas = getCookie($.trim($("#account").val()));//获取cookie
-              $("#password").val(pas);  //赋值给password
-            }
-          });
-        }
+        getUserIP(function (ip) {
+          $('#password').val(ip);//自动填入IP地址
+        });
+        // if (returnCitySN["cip"])		//自动填入IP地址
+        //   $('#password').val(returnCitySN["cip"]);
+        // else {
+        //   $("#password").val(pas);  //赋值给password
+        //   //获取ip
+        //   $("#account").keyup(function () {
+        //     if (window.localStorage) {
+        //       var pas = localStorage.getItem($.trim($("#account").val()));//获取账号对应的ip值
+        //       $("#password").val(pas);  //赋值给password
+        //       if (pas == "" || pas == undefined || pas == null) {
+        //         $("#passwordkeeping").prop("checked", false)
+        //       } else {
+        //         $("#passwordkeeping").prop("checked", true)
+        //       }
+        //     }
+        //     else {
+        //       var pas = getCookie($.trim($("#account").val()));//获取cookie
+        //       $("#password").val(pas);  //赋值给password
+        //     }
+        //   });
+        // }
         if (pas == "" || pas == undefined || pas == null) {
           $("#passwordkeeping").prop("checked", false)
         } else {

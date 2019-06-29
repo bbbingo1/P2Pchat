@@ -151,6 +151,7 @@ input.auth{
     background-position: 5px 2px;
 }
 #password{
+    cursor: initial;
     background: url(../image2//icon_input.png) no-repeat;
     background-position: 5px -58px;
 }

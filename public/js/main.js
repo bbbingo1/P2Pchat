@@ -25,12 +25,13 @@ window.onload = function () {
         if (window.WebSocket) {
 
           //连接到服务器
-          socket = new WebSocket("ws://127.0.0.1:3000/ws");
+          socket = new WebSocket("ws://localhost:3000/ws");
 
           //建立连接成功后的回调
           socket.onopen = function (req) {
             globalItem.myName = $("#account").val();
             globalItem.myIp = $('#password').val();
+            console.log(globalItem.myIp)
             globalItem.mess = {};
             globalItem.mess.type = 0; //设置交互类型为上传用户信息
             globalItem.mess.user = { ip: $('#password').val(), name: $("#account").val() }
@@ -70,8 +71,8 @@ window.onload = function () {
           }
 
           //连接发生错误
-          websocket.onerror = function () {
-            alert("连接发生错误");
+          socket.onerror = function () {
+            alert("浏览器与服务器连接发生错误");
           }
 
           //监听窗口关闭
@@ -108,7 +109,7 @@ var api = {
     }
     loadRender();
   },
-  //发起聊天
+  //发起聊天，建立TCP连接
   toChat: function (name, ip) {
     var idx;
     var h = 1;
