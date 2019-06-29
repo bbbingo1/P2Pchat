@@ -7,8 +7,72 @@ window.onload = function () {
       type: 0,//判断连接交互类型，0为上传用户信息，1位私聊，2位多播
       user: { ip: '', name: '', }//用户信息
     },
-  }
+    users: []//好友列表
+  };
 
+  (function () {
+    //websocket操作
+    if (!window.WebSocket) {
+      //兼容Moz
+      window.WebSocket = window.MozWebSocket;
+    }
+    if (window.WebSocket) {
+
+      //连接到服务器
+      socket = new WebSocket("ws://localhost:3000/ws");
+
+      //建立连接成功后的回调
+      socket.onopen = function (req) {
+      }
+
+      //接收到服务器数据的回调
+      socket.onmessage = function (req) {
+        console.log(req.data)
+        var data = JSON.parse(req.data);
+        if (data.type == 99)//初始化
+        {
+          globalItem.myIp = data.myIp;
+          setTimeout("finishLoadingRender1()", 100);
+          $(".header").find(".nickname").text(globalItem.myName);
+          $(".profile_mini_m_bd").find(".nickname").text(globalItem.myName);
+          $(".profile_mini_m_bd").find(".ip").text(globalItem.myIp);
+        }
+        if (data.type == 0) {//初始化或更新在线用户列表
+          globalItem.users.push(data.user)
+          addressList.vue.fris = globalItem.users.filter(function (item, index) {
+            console.log(globalItem.users[index])
+            if (item.ip != globalItem.myIp) return true;
+            else { return false; }
+          })
+        }
+        // for (var i = 0; i < data.user.length; i++) {
+        //   console.log(data.user[i])
+        //   if (data.user[i].name != globalItem.myName) {
+        //     // data.user[i].dot = 0;
+        //     // data.user[i].dot_class = 'none';		//加入两个小红点的样式
+        //     addressList.vue.fris.push(data.user[i]);
+        //   }
+        // }
+
+      }
+
+      //连接关闭后的回调
+      socket.onclose = function (req) {
+      }
+
+      //连接发生错误
+      socket.onerror = function () {
+        alert("浏览器与服务器连接发生错误");
+      }
+
+      //监听窗口关闭
+      window.onbeforeunload = function () {
+        var mess = { type: 100 }
+        socket.send(JSON.stringify(mess))
+        socket.close()
+      }
+    }
+  }());
 
   //登录业务
   $("#login_form").submit(function (event) {
@@ -16,70 +80,14 @@ window.onload = function () {
 
     if ($(".box_overlay").hasClass("none")) {
       if ($("#account").val() != "" && $("#password").val() != "") {
-
-        //websocket操作
-        if (!window.WebSocket) {
-          //兼容Moz
-          window.WebSocket = window.MozWebSocket;
-        }
-        if (window.WebSocket) {
-
-          //连接到服务器
-          socket = new WebSocket("ws://localhost:3000/ws");
-
-          //建立连接成功后的回调
-          socket.onopen = function (req) {
-            globalItem.myName = $("#account").val();
-            globalItem.myIp = $('#password').val();
-            console.log(globalItem.myIp)
-            globalItem.mess = {};
-            globalItem.mess.type = 0; //设置交互类型为上传用户信息
-            globalItem.mess.user = { ip: $('#password').val(), name: $("#account").val() }
-            socket.send(JSON.stringify(globalItem.mess))
-            api.beforeLogin();
-          }
-
-          //接收到服务器数据的回调
-          socket.onmessage = function (req) {
-            var data = JSON.parse(req.data);
-
-            if (data.type == 0)//初始化或更新在线用户列表
-              if (data.host == true) {
-                setTimeout("finishLoadingRender1()", 100);
-                $(".header").find(".nickname").text(globalItem.myName);
-                $(".profile_mini_m_bd").find(".nickname").text(globalItem.myName);
-                $(".profile_mini_m_bd").find(".ip").text(globalItem.myIp);
-              }
-            addressList.vue.fris = data.user.filter(function (item, index) {
-              console.log(data.user[index])
-              if (item.ip != globalItem.myIp) return true;
-              else { return false; }
-            })
-            // for (var i = 0; i < data.user.length; i++) {
-            //   console.log(data.user[i])
-            //   if (data.user[i].name != globalItem.myName) {
-            //     // data.user[i].dot = 0;
-            //     // data.user[i].dot_class = 'none';		//加入两个小红点的样式
-            //     addressList.vue.fris.push(data.user[i]);
-            //   }
-            // }
-
-          }
-
-          //连接关闭后的回调
-          socket.onclose = function (req) {
-          }
-
-          //连接发生错误
-          socket.onerror = function () {
-            alert("浏览器与服务器连接发生错误");
-          }
-
-          //监听窗口关闭
-          window.onbeforeunload = function () {
-            websocket.close();
-          }
-        }
+        globalItem.myName = $("#account").val();
+        globalItem.myIp = $('#password').val();
+        console.log(globalItem.myIp)
+        globalItem.mess = {};
+        globalItem.mess.type = 0; //设置交互类型为上传用户信息
+        globalItem.mess.user = { ip: $('#password').val(), name: $("#account").val() }
+        socket.send(JSON.stringify(globalItem.mess))
+        api.beforeLogin();
       }
       else {
         $(".warning .dec_txt").text("输入不能为空");
@@ -88,6 +96,7 @@ window.onload = function () {
     }
   });
 }
+
 var api = {
   //登录前操作
   beforeLogin: function () {
