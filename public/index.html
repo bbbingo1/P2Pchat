@@ -267,29 +267,30 @@
             </div>
             <div class="box_bd scrolls" style="margin-bottom: 0px; margin-right: 0px; height:100%;">
               <div class="mms">
-                <div class="mm-repeat none">
-                  <!-- <div class="more">
-                    <a href="" class="content">查看更多消息</a>
-                    <div class="loading" style="display:inline-block;"></div>
-                  </div> -->
-                  <div class="message me" style="display:none;">
-                    <div class="message-time none">
-                      <div class="content"></div>
+                <div class="mm-repeat none" id="message_view">
+                  <div class="more">
+                    <!-- <a href="" class="content">查看更多消息</a>
+                    <div class="loading" style="display:inline-block;"></div> -->
+                  </div>
+                  <div class="message" v-for="(item,index) in messes" :class="{me:item.obj==1}" :class="{you:item.obj==2}">
+                    <div class="message-time">
+                      <div class="content">{{item.time.date}} {{item.time.time}}</div>
                     </div>
-                    <img src="image2/userHead.jpg" alt="" class="avatar stop" />
+                    <img src="image2/userHead.jpg" alt="" class="avatar stop" v-if='item.obj==1'/>
+                    <img src="image2/contactsHead.jpg" alt="" class="avatar stop" v-if='item.obj==2' />
                     <div class="content" style="position:relative;">
-                      <div class="loading">
-                      </div>
+                      <!-- <div class="loading">
+                      </div> -->
                       <div class="bubble bubble_primary right">
                         <div class="bubble_cont">
                           <div class="plain">
-                            <p class="message_plain">陈小林</p>
+                            <p class="message_plain">{{item.value}}</p>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div class="message you" style="display:none;">
+                  <!-- <div class="message you">
                     <div class="message-time none">
                       <div class="content"></div>
                     </div>
@@ -303,7 +304,8 @@
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div>                     -->
+
                 </div>
               </div>
               <div id="prerender"
@@ -636,7 +638,7 @@
             </div>
             <div class="action">
               <span class="desc">按下Ctrl+Enter换行</span>
-              <a href="" class="btn_send">发送</a>
+              <a class="btn_send">发送</a>
             </div>
           </div>
         </div>

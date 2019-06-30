@@ -106,7 +106,8 @@ wss.on('connection', function (ws, req) {
         if (mess.type == 1) {//TCP主动建立连接（客户端触发发送消息）
             // process.stdin.resume();	//process.stdin流来接受用户的键盘输入，这个可读流初始化时处于暂停状态，调用流上的resume()方
             // process.stdin.setEncoding('utf8');//设置编码
-            if (!globalItem.tcpList.some((item) => { return item.receiver.ip == mess.receiver.ip })) {//没有在tcp服务器连接的客户列表中
+            console.log("1",globalItem.tcpList)
+            if (!globalItem.tcpList.some((item) => { return item.receiver.ip.split(":")[0] == mess.receiver.ip.split(":")[0] })) {//没有在tcp服务器连接的客户列表中
 
                 //双攻流实例化:创建TCP套接字或流式 IPC 端点的抽象
                 var netSocket = new net.Socket()
@@ -114,7 +115,7 @@ wss.on('connection', function (ws, req) {
                 // netSocket.connect(6969, (mess.receiver.ip).split(":")[0], () => {
                 netSocket.connect(6979, (mess.receiver.ip).split(":")[0], () => {
                     netSocket.name = mess.receiver.name
-                    netSocket.ip = mess.receiver.ip;
+                    netSocket.ip = mess.receiver.ip.split(":")[0];//对等方的IP
                     globalItem.tcpList.push({ receiver: { name: netSocket.name, ip: netSocket.ip }, tcp: netSocket });
                 })
 
@@ -124,8 +125,18 @@ wss.on('connection', function (ws, req) {
             }
         }
         if (mess.type == 2) {//TCP发送消息（客户端点击发送）
+            console.log("2:",globalItem.tcpList)
+            globalItem.tcpList.forEach((item) => {
+                console.log(item.receiver)
+                if (item.receiver.ip.split(":")[0] == mess.receiver.ip.split(":")[0]) {
+                    item.tcp.write(JSON.stringify(mess)); //发送消息
+                    console.log("发送信息内容为：", mess.mes.value, mess.receiver.ip.split(":")[0])
+                    return;
+                }
+            })
         }
         if (mess.type == 100) {//客户端退出窗口，服务器停止服务
+            console.log("退出窗口")
             wss.close()
             udpServer.close()
             tcpServer.close()
@@ -182,7 +193,7 @@ wss.on('connection', function (ws, req) {
 
         if (!sockets.some((item) => { return item == socket })) {//未建立过TCP连接
             sockets.push(socket)
-            if (!globalItem.tcpList.some((item) => { return item.receiver.ip == socket.remotePort })) {//没有在tcp服务器连接的客户列表中
+            if (!globalItem.tcpList.some((item) => { return item.receiver.ip.split(":")[0] == socket.remoteAddress })) {//没有在tcp服务器连接的客户列表中
 
                 //双攻流实例化:创建TCP套接字或流式 IPC 端点的抽象
                 var netSocket = new net.Socket()
@@ -191,21 +202,27 @@ wss.on('connection', function (ws, req) {
                 //     netSocket.ip = socket.remoteAddress;
                 // })
                 netSocket.connect(6979, socket.remoteAddress.split(":")[0], () => {
-                    netSocket.ip = socket.remoteAddress;//存储接入的IP+端口
+                    // console.log(socket.remoteAddress)
+                    // console.log(socket.remoteAddress.split(":")[0])
+                    netSocket.ip = socket.remoteAddress.split(":")[0];//存储接入的IP
+                    globalItem.tcpList.push({ receiver: { name: "", ip: socket.remoteAddress.split(":")[0] }, tcp: netSocket });
+                    console.log("3:",globalItem.tcpList,netSocket.ip)
+
                 })
 
                 netSocket.on("error", function (err) {
                     console.log('TCP-Server-socket error:', err.message);
                 });
 
-                globalItem.tcpList.push({ receiver: { name: "", ip: netSocket.ip }, tcp: netSocket });
 
             }
 
         }
         //接收到数据
-        socket.on("data", function () {
+        socket.on("data", function (message) {
             console.log("socketLink-getdata")
+            //服务器获取TCP另一端发送来的数据并通过websocket传给客户端
+            ws.send(JSON.stringify(JSON.parse(message)))
         })
 
         //断开连接，删除被关闭的连接
@@ -216,7 +233,7 @@ wss.on('connection', function (ws, req) {
             globalItem.tcpList.forEach(function (item, index) {
                 if (item.receiver.ip == socket.remoteAddress) idx = index
             })
-            idx.globalItem.tcpList.splice(idx, 1)
+            globalItem.tcpList.splice(idx, 1)
         })
         socket.on("error", function (err) {
             console.log('TCP-Server-link error:', err.message);

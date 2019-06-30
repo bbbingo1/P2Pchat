@@ -51,14 +51,41 @@ window.onload = function () {
             else { return false; }
           })
         }
-        // for (var i = 0; i < data.user.length; i++) {
-        //   console.log(data.user[i])
-        //   if (data.user[i].name != globalItem.myName) {
-        //     // data.user[i].dot = 0;
-        //     // data.user[i].dot_class = 'none';		//加入两个小红点的样式
-        //     addressList.vue.fris.push(data.user[i]);
-        //   }
-        // }
+        if (data.type == 2) {//收到信息
+          var mess = data.mes;
+          var idx;
+          var h = 1;
+          chatList.vue.dans.forEach(function (item, index) {
+            if (item.name == data.sender.name) {
+              h = 0;
+              idx = index;
+              return false;
+            }
+            else { return; }
+          })
+          var dan = new Object();
+          //把该联系人放到最前
+          if (h == 0) {
+            console.log(123)
+            dan = chatList.vue.dans[idx];
+            dan.lefts++;
+            chatList.vue.dans.splice(idx, 1);
+          }
+          //创建新的最近联系人
+          else {
+            dan = {
+              name: data.sender.name,
+              msg: mess.value,
+              ip: data.sender.ip,
+              lefts: 1,
+              messes: []
+            }
+          }
+          console.log(mess)
+          dan.messes.push(mess)
+          chatList.vue.dans.push(dan);
+          chatList.vue.c = 0;
+        }
 
       }
 
@@ -131,11 +158,11 @@ var api = {
       type: 1,
       receiver: {
         name: name,
-        ip: ip
+        ip: ip.split(":")[0]
       },
       sender: {
         name: globalItem.myName,
-        ip: globalItem.myId
+        ip: globalItem.myIp.split(":")[0]
       }
     }
     socket.send(JSON.stringify(mess))
@@ -153,6 +180,7 @@ var api = {
     //把该联系人放到最前
     if (h == 0) {
       dan = chatList.vue.dans[idx];
+      dan.lefts = 0;
       chatList.vue.dans.splice(idx, 1);
     }
     //创建新的最近联系人
@@ -161,20 +189,22 @@ var api = {
         name: name,
         msg: '',
         ip: ip,
-        lefts: 0
+        lefts: 0,
+        messes: []
       }
     }
-    chatList.vue.dans.unshift(dan);
+    chatList.vue.dans.push(dan);
     chatList.vue.c = 0;
-    //同时创建一个新的聊天消息框
-    // $(".mm-repeat").find(".more .content").removeClass("none");
-    $(".message").slice(2).detach();
-    // var k = findNum(t);
-    // Num[k].setMessage();a
     //利用属性lefts记录未读消息数
     chatList.vue.dans[0].lefts = 0;
-    //储存联系人的账户id
-    // $(".chat-repeat").eq(0).data("signal", t);
+    //把消息数组同步到显示的消息列表
+    chatList.vue.dans.forEach(function (item, index) {
+      if (ip == item.ip) {
+        idx = index;
+        return;
+      }
+    })
+    messList.vue.messes = chatList.vue.dans[idx].messes
     //样式改变
     $(".contacts_message").addClass("none");
     $(".title_wrap .title").addClass("none");
@@ -183,7 +213,7 @@ var api = {
     $(".title_poi").removeClass("none");
     $(".chatin").removeClass("none");
     $(".mm-repeat").removeClass("none");
-    if ($(".mm-repeat").find($(".message")).length == 2) { $(".message_empty").removeClass("none"); $(".message_empty .nonotes").removeClass("none"); }
+    if ($(".mm-repeat").find($(".message")).length == 0) { $(".message_empty").removeClass("none"); $(".message_empty .nonotes").removeClass("none"); }
     else { $(".message_empty").addClass("none"); }
 
     $("#editArea").focus();//鼠标聚焦在输入框
@@ -199,9 +229,63 @@ var api = {
     $(".nav_view").eq(2).addClass("none");
     $(".box_bd").animate({ scrollTop: $(".box_bd")[0].scrollHeight }, 1000);//让滚动条滚动到底部
 
-    // $(".chatin").undelegate();//解除绑定
+    $(".chatin").undelegate();//解除绑定
     // $(".more").undelegate();//解除绑定
-    // callback3(t);//调用callback3发送信息或获取聊天记录};
+    api.callback3(name, ip);//调用callback3发送信息};
+
+  },
+  intervals: 0,
+  //发送信息
+  callback3: function (name, ip) {
+    var that = this
+    $(".chatin").delegate(".btn_send", "click", function (event) {
+      event.preventDefault();
+      that.intervals++;
+      setTimeout("api.intervals = 0;", 6000)
+      if (that.intervals > 5) { $(".warning .dec_txt").text("发送时间过于频繁"); errorRender(); }
+      else {
+        var contents = $("#editArea").val();
+        if ($.trim(contents).length > 0) {
+          var clock = api.currentTime();
+          var idx;
+          //把发送的信息存入联系人的消息数组中
+          chatList.vue.dans.forEach(function (item, index) {
+            if (ip == item.ip) {
+              idx = index;
+              return;
+            }
+          })
+          var mes = new Object();
+          mes = { obj: 1, value: contents, time: clock }
+          chatList.vue.dans[idx].messes.push(mes)
+
+          //把消息数组同步到显示的消息列表
+          messList.vue.messes = chatList.vue.dans[idx].messes
+          //向服务端发送数据（TCP）
+          var mess = {
+            type: 2,
+            mes: { obj: 2, value: contents, time: clock },
+            receiver: {
+              name: name,
+              ip: ip
+            },
+            sender: {
+              name: globalItem.myName,
+              ip: globalItem.myIp
+            }
+          }
+          $(".box_bd").animate({ scrollTop: $(".box_bd")[0].scrollHeight }, 1000);//让滚动条滚动到底部
+          console.log(messList.vue.messes)
+          socket.send(JSON.stringify(mess))
+          $("#editArea").val("");
+        } else {
+          $(".warning .dec_txt").text("发送消息不能为空");
+          errorRender();
+          return false;
+        }
+      }
+
+    })
   },
 
   //立即执行函数
@@ -249,7 +333,7 @@ var api = {
         $(".empty").addClass("none");
         $(".title_poi").removeClass("none");
         $(".title_wrap .title").addClass("none");
-        if ($(".mm-repeat").find($(".message")).length == 2) { $(".message_empty").removeClass("none"); }
+        if ($(".mm-repeat").find($(".message")).length == 0) { $(".message_empty").removeClass("none"); }
         //tab右侧信息框切换
         if (chatList.vue.c != Infinity) {
           $(".chatin").removeClass("none");
@@ -413,5 +497,71 @@ var api = {
       $(".profile_f_mini_bd").find(".nickname").text(name);
     });
 
+
+    //好友个人信息小框触发
+    $(".member img , .you img").click(function toggleSystemMenu2(ev) {
+      var obj = $("#mmpop_f_profile");
+      drag(obj);
+      $(".profile_f_mini_bd").find(".id").text($(".mm-repeat").data("signal"));
+      var name = $(".box_hd .title_name ").text();
+      $(".profile_f_mini_bd").find(".nickname").text(name);
+      //兼容IE浏览器；获取鼠标点击的坐标     
+      var oEvent = ev || client;
+      var w = document.body.scrollWidth;
+      var h = document.body.scrollHeight;
+      var hideX = document.body.scrollLeft;
+      if (oEvent.clientX + 8 + 220 > w) { var x = oEvent.clientX - 8 - 220 }
+      else { var x = oEvent.clientX + 8; }
+      if (oEvent.clientY + 20 + 336 > h) { var y = oEvent.clientY - 20 - 336 }
+      else { var y = oEvent.clientY; }
+      $("#mmpop_f_profile").fadeOut(150).fadeIn(150).css({
+        "top": y + "px",
+        "left": x + hideX + "px"
+      });
+      $("#mmpop").hide();
+      $(".dropdown").addClass("none");
+      $(".change_box").hide();
+      $("#mmpop_profile").fadeOut(150);
+      $(".slide-top").animate({ top: "-252px", opacity: 0 }, 150);
+      setTimeout('$(".slide-top").hide()', 150);
+    });
+
   }(),
+
+  //获取当前时间
+  currentTime: function () {
+    var clock = { time: "", date: "", ddate: "", m: "" };
+    var now = new Date();
+    var year = now.getFullYear();       //年
+    var month = now.getMonth() + 1;     //月
+    var day = now.getDate();            //日
+    var hh = now.getHours();            //时
+    var mm = now.getMinutes();          //分        
+    //time：时分；date：年月日；ddate：日；m：年月
+    if (hh < 10)
+      clock.time += "0";
+    clock.time += hh + ":";
+    if (mm < 10)
+      clock.time += '0';
+    clock.time += mm;
+
+    clock.date = year + "-";
+    if (month < 10)
+      clock.date += "0";
+    clock.date += month + "-";
+    if (day < 10)
+      clock.date += "0";
+    clock.date += day;
+
+    if (day < 10)
+      clock.ddate += "0";
+    clock.ddate += day;
+
+    clock.m = year + "-";
+    if (month < 10)
+      clock.m += "0";
+    clock.m += month;
+
+    return (clock);
+  }
 }

@@ -2880,6 +2880,7 @@ box-shadow: 0px 1px 6px 4px rgba(0, 0, 0, 0.2) inset;
     margin-right: 7px;
 }
 a.btn_send {
+    cursor: pointer;
     text-decoration: none;
     background-color: #fff;
     color: #222;
