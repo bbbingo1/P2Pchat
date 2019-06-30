@@ -1,14 +1,15 @@
+var socket;
+var globalItem = {
+  myName: '',
+  myIp: '',
+  mess: {
+    type: 0,//判断连接交互类型，0为上传用户信息，1位私聊，2位多播
+    user: { ip: '', name: '', }//用户信息
+  },
+  users: []//好友列表
+};
+
 window.onload = function () {
-  var socket;
-  var globalItem = {
-    myName: '',
-    myIp: '',
-    mess: {
-      type: 0,//判断连接交互类型，0为上传用户信息，1位私聊，2位多播
-      user: { ip: '', name: '', }//用户信息
-    },
-    users: []//好友列表
-  };
 
   (function () {
     //websocket操作
@@ -38,9 +39,9 @@ window.onload = function () {
           $(".profile_mini_m_bd").find(".ip").text(globalItem.myIp);
         }
         if (data.type == 0) {//初始化或更新在线用户列表
-          globalItem.users.forEach((item,index) => {
-            if(data.user.ip==item.ip){
-              globalItem.users.splice(index,1)
+          globalItem.users.forEach((item, index) => {
+            if (data.user.ip == item.ip) {
+              globalItem.users.splice(index, 1)
             }
           });
           globalItem.users.push(data.user)
@@ -125,7 +126,19 @@ var api = {
   },
   //发起聊天，建立TCP连接
   toChat: function (name, ip) {
-    console.log(ip)
+    //主动发送TCP建立连接请求，先经过客户端自己与服务器建立的websocket连接，再通过服务器的TCP服务传到目标服务器的客户端
+    var mess = {
+      type: 1,
+      receiver: {
+        name: name,
+        ip: ip
+      },
+      sender: {
+        name: globalItem.myName,
+        ip: globalItem.myId
+      }
+    }
+    socket.send(JSON.stringify(mess))
     var idx;
     var h = 1;
     chatList.vue.dans.forEach(function (item, index) {
