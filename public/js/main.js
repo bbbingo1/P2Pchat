@@ -21,7 +21,7 @@ window.onload = function () {
     if (window.WebSocket) {
 
       //连接到服务器
-      socket = new WebSocket("ws://localhost:3000/ws");
+      socket = new WebSocket("ws://localhost:3030/ws");
 
       //建立连接成功后的回调
       socket.onopen = function (req) {

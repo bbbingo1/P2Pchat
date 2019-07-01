@@ -33,7 +33,7 @@ const WebSocket = require('ws');
 const WebSocketServer = WebSocket.Server;
 // 实例化websocket服务器:与界面进行信息传输
 const wss = new WebSocketServer({
-    port: 3000
+    port: 3030
 });
 
 console.log("当前服务器内网地址：" + serverIp)
@@ -44,7 +44,7 @@ const net = require('net')
 var sockets = [];//连接池
 
 //TCP监听端口号
-const tcpServerPort = 6969
+const tcpServerPort = 3000
 
 //TCP服务器端，用于与其他对等方聊天通讯时建立连接，当收到浏览器那边通过websocket传来的连接信息时调用,（类似于Websocket）
 const tcpServer = net.createServer();
@@ -88,9 +88,10 @@ wss.on('connection', function (ws, req) {
             mess.user.ip = globalItem.myIp
 
             ws.send(JSON.stringify(globalItem))
+            udpServer.send(JSON.stringify(mess), 8081, multicastAddr);
             //广播到局域网下的所有主机的8081端口，测试时用8085
-            udpServer.send(JSON.stringify(mess), 8085, multicastAddr);
-            // //服务器广播，更新在线用户;该广播仅是广播到本地3000端口连接websocket的主机，而不是目标的局域网中的主机，废弃
+            // udpServer.send(JSON.stringify(mess), 8085, multicastAddr);
+            // //服务器广播，更新在线用户;该广播仅是广播到本地3030端口连接websocket的主机，而不是目标的局域网中的主机，废弃
             // wsClients.forEach(function each(wsClient) {
             //     if (wsClient == ws && wsClient.readyState === WebSocket.OPEN) {
             //         globalItem.mess.host = true;
@@ -113,7 +114,7 @@ wss.on('connection', function (ws, req) {
                 //双攻流实例化:创建TCP套接字或流式 IPC 端点的抽象
                 var netSocket = new net.Socket()
                 //请求连接
-                // netSocket.connect(6969, (mess.receiver.ip).split(":")[0], () => {
+                // netSocket.connect(3000, (mess.receiver.ip).split(":")[0], () => {
                 netSocket.connect(6979, (mess.receiver.ip).split(":")[0], () => {
                     netSocket.name = mess.receiver.name
                     netSocket.ip = mess.receiver.ip.split(":")[0];//对等方的IP
@@ -180,7 +181,7 @@ wss.on('connection', function (ws, req) {
             // var ip = mess.user.ip.slice(0, dot)
             // var port = mess.user.ip.slice(dot + 1)
             var dot = mess.user.ip.split(":")
-            udpServer.send(JSON.stringify(reMess), dot[1], dot[0])//在线用户通过udp单播响应多播
+            udpServer.send(JSON.stringify(reMess), 8081, dot[0])//在线用户通过udp单播响应多播
         }
         else if (mess.type == 4) {//收到登录广播后别人发来的的单播响应，客户端要显示用户列表，即在好友列表中添加用户
             mess.type = 0;
@@ -199,10 +200,10 @@ wss.on('connection', function (ws, req) {
                 //双攻流实例化:创建TCP套接字或流式 IPC 端点的抽象
                 var netSocket = new net.Socket()
                 //启动连接
-                // netSocket.connect(6969, socket.remoteAddress.split(":")[0], () => {
+                // netSocket.connect(3000, socket.remoteAddress.split(":")[0], () => {
                 //     netSocket.ip = socket.remoteAddress;
                 // })
-                netSocket.connect(6979, socket.remoteAddress.split(":")[0], () => {
+                netSocket.connect(3000, socket.remoteAddress.split(":")[0], () => {
                     // console.log(socket.remoteAddress)
                     // console.log(socket.remoteAddress.split(":")[0])
                     netSocket.ip = socket.remoteAddress.split(":")[0];//存储接入的IP
