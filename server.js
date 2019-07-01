@@ -64,7 +64,8 @@ wss.on('connection', function (ws, req) {
 
     //监听浏览器（客户端）发来的信息
     ws.on('message', function (message) {
-        // console.log(`[SERVER] Received: ${message}`);//终端打印收到的信息
+        console.log(123)
+        console.log(ws.binaryType)
         var mess = JSON.parse(message);
         //接收信息并根据type执行相应操作
         if (mess.type == 0) {//更新当前在线用户信息;udp组播/广播

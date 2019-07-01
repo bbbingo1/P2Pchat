@@ -1,4 +1,5 @@
 var socket;
+var socket2;
 var globalItem = {
   myName: '',
   myIp: '',
@@ -69,6 +70,7 @@ window.onload = function () {
             console.log(123)
             dan = chatList.vue.dans[idx];
             dan.lefts++;
+            dan.msg = mess.value;
             chatList.vue.dans.splice(idx, 1);
           }
           //创建新的最近联系人
@@ -94,8 +96,22 @@ window.onload = function () {
       }
 
       //连接发生错误
-      socket.onerror = function () {
-        alert("浏览器与服务器连接发生错误");
+      socket.onerror = function (err) {
+        $(".lose .dec_txt").text("与服务器断开连接");
+        failRender();
+      }
+
+
+      //文件传输用websocket服务器
+      socket2 = new WebSocket("ws://localhost:3030/ws")
+
+      //接收到服务器数据的回调
+      socket2.onmessage = function (req) {}
+
+      //连接发生错误
+      socket2.onerror = function (err) {
+        $(".lose .dec_txt").text("与服务器断开连接");
+        failRender();
       }
 
       //监听窗口关闭
@@ -232,6 +248,7 @@ var api = {
     $(".chatin").undelegate();//解除绑定
     // $(".more").undelegate();//解除绑定
     api.callback3(name, ip);//调用callback3发送信息};
+    api.callback4(name, ip);//调用callback3发送信息};
 
   },
   intervals: 0,
@@ -257,8 +274,8 @@ var api = {
           })
           var mes = new Object();
           mes = { obj: 1, value: contents, time: clock }
+          chatList.vue.dans[idx].msg = contents;
           chatList.vue.dans[idx].messes.push(mes)
-
           //把消息数组同步到显示的消息列表
           messList.vue.messes = chatList.vue.dans[idx].messes
           //向服务端发送数据（TCP）
@@ -288,8 +305,35 @@ var api = {
     })
   },
 
+  //发送arraybuffer（二进制文件）
+  callback4: function (name, ip) {
+    $(".chatin").delegate(".web_chat_pic_label", "click", function (event) {
+      $('#fileUpload').click()
+    })
+
+  },
+
   //立即执行函数
   initItem: function () {
+
+    //文件提交
+    $('#fileUpload').change(function () {
+      console.log(123)
+      var inputElement = document.getElementById("fileUpload");
+      var fileList = inputElement.files;
+      console.log(fileList)
+      var reader = new FileReader();
+      //以二进制发送文件
+      reader.readAsArrayBuffer(fileList[0]);
+      //文件读取完毕后该函数响应
+      reader.onload = function loaded(evt) {
+        // console.log("文件读取完毕")
+        var binaryString = evt.target.result;
+        console.log(binaryString)
+        //发送文件
+        socket2.send(binaryString);
+      }
+    })
 
     //关闭弹出的小窗口
     var c = function () {
@@ -526,6 +570,28 @@ var api = {
       setTimeout('$(".slide-top").hide()', 150);
     });
 
+    //点击弹出发送表情框
+    $(".web_chat_face").click(function (event) {
+      event.stopPropagation();
+      $(".dropdown").addClass("none");
+      $(".mmpop").hide();
+      if ($(".slide-top").is(":hidden")) {
+        $(".slide-top").show().animate({ top: "-272px", opacity: 100 }, 100);
+      }
+      else {
+        $(".slide-top").animate({ top: "-252px", opacity: 0 }, 150);
+        setTimeout('$(".slide-top").hide()', 150);
+      }
+    })
+    //点击更换表情列表
+    $(".exp_hd_item").click(function () {
+      var idx = $(this).index();
+      $(this).addClass("exp_hd_active");
+      $(".exp_hd_item").not($(this)).removeClass("exp_hd_active");
+      $(".exp_cont").eq(idx).removeClass("none");
+      $(".exp_cont").not($(".exp_cont").eq(idx)).addClass("none");
+    })
+
   }(),
 
   //获取当前时间
@@ -563,5 +629,31 @@ var api = {
     clock.m += month;
 
     return (clock);
+  },
+
+  //发送消息表情处理
+  faceReplace: function (content) {
+    var str = "<xmp>" + content + "</xmp>";
+    //处理表情
+    var callback5 = function () {
+      $(".exp_bd .face").each(function foo(index, element) {
+        var val = "[" + $(this).text() + "]";
+        var f_start = str.indexOf(val);
+        if (f_start != -1)  //说明val表情存在
+        {
+          var f_end = f_start + val.length;
+          var s_end = str.length;
+          var before = str.substring(0, f_start);
+          var after = str.substring(f_end, s_end);
+          var c = $(this).attr("class");
+          //把内容中[...]替换为显示表情的标签，用xmp过滤其他内容，防止不友好操作
+          str = before + "</xmp>" + '<div class="' + c + '"></div>' + "<xmp>" + after;
+          var f_start = str.indexOf(val);
+          if (f_start != -1) { callback5(); } //处理重复出现的表情
+        }
+      })
+    }
+    callback5();
+    return str;
   }
 }

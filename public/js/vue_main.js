@@ -58,6 +58,7 @@ var chatList = {
                 $(".mm-repeat").removeClass("none");
                 $(".chatin").undelegate();//解除绑定
                 api.callback3(item.name, item.ip);//调用callback3发送信息};
+                api.callback4(item.name, item.ip);//调用callback4发送文件};
                 $(".box_bd").animate({ scrollTop: $(".box_bd")[0].scrollHeight }, 1000);//让滚动条滚动到底部
             }
         },

@@ -2903,3 +2903,7 @@ a.btn_send:hover {
   transform: translateX(0) rotateY(0deg);
   opacity: 1;
 }
+.webuploader-element-invisible {
+  position: absolute;
+  clip: rect(1px,1px,1px,1px);
+}
